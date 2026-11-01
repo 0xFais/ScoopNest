@@ -12,7 +12,7 @@ public sealed class ScoopModule(IScoopSetupBackend? setupBackend = null) : IDevT
     public ModulePage CreatePage(IModuleContext context)
     {
         var root = ScoopService.DetectRoot(context.Get("scoop.root"));
-        var workspace = new ScoopWorkspace { Root = root, InstallLocation = string.IsNullOrWhiteSpace(root) ? Path.Combine(AppContext.BaseDirectory, "Scoop") : root };
+        var workspace = new ScoopWorkspace { Root = root, InstallLocation = Path.Combine(AppContext.BaseDirectory, "Scoop") };
         var page = new ModulePage(Id, "Scoop manager", "Installed packages, bucket search, cache and custom portable applications.", "Apps Manager", "\uE8F1") { ScoopWorkspace = workspace };
         _ = new ScoopController(workspace, page, context, setupBackend);
         return page;
@@ -55,14 +55,13 @@ public sealed class ScoopController
         Add("BrowseInstallLocation", async ct => { if (await c.PickFolderAsync("Choose an empty folder for Scoop") is { } location) w.InstallLocation = location; });
         Add("InstallScoop", async ct =>
         {
-            if (w.HasInstallation) throw new InvalidOperationException("Scoop is already installed. Use Add to PATH or choose another existing installation.");
             var location = ScoopSetupService.ValidateDestination(active?.InstallLocation ?? w.InstallLocation);
             await Confirm("Install Scoop", "Download and run the official Scoop installer?\n\nInstall location: " + location + "\nSource: " + ScoopSetupService.InstallerUrl + "\n\nScoop's shims folder will be added to your user PATH. Existing PATH entries will be preserved.");
             w.SetupState = ScoopSetupState.Installing; w.SetupMessage = "Downloading and installing Scoop. Progress appears in Activity.";
             try { await setup.Install(location, Path.Combine(c.DataDirectory, "Downloads"), previous => c.Save("scoop.setup.pathBackup", previous), ct, log); w.Root = location; c.Save("scoop.root", location); if (active is not null) active = active with { Root = location }; await Refresh(ct); }
             finally { if (w.SetupState == ScoopSetupState.Installing) ApplySetup(setup.Probe(location)); }
         });
-        Add("ChooseRoot", async ct => { if (await c.PickFolderAsync("Select Scoop root (containing apps and buckets)") is { } root) { w.Root = root; if (active is not null) active = active with { Root = root }; await Refresh(ct); } });
+        Add("ChooseRoot", async ct => { if (await c.PickFolderAsync("Select Scoop root (containing apps and buckets)") is { } root) { var selected = setup.Probe(root); if (selected.State is not (ScoopSetupState.Ready or ScoopSetupState.PathMissing)) throw new InvalidOperationException(selected.Message); w.Root = root; if (active is not null) active = active with { Root = root }; await Refresh(ct); } });
         Add("Search", async ct => { var root = Root(); var query = active?.Query ?? w.Query; var rows = await Task.Run(() => ScoopService.Search(root, query, ct), ct); Replace(w.Results, rows); w.Summary = $"{rows.Count} search results" + (rows.Count == 500 ? " · Limited to 500; refine your search" : ""); });
         foreach (var action in new[] { "update", "hold", "unhold", "reset", "uninstall" })
         {
@@ -428,7 +427,7 @@ public sealed class ScoopController
         if (Changed("env_add_path") && n["env_add_path"] is JsonArray complexPaths && complexPaths.Any(x => x is not JsonValue)) throw new InvalidOperationException("This manifest has advanced PATH entries. Edit them in Advanced JSON to preserve their options.");
         if (Changed("shortcuts") || Changed("env_add_path")) { var scratch = new JsonObject(); ApplyLists(scratch, w.AuthorShortcuts, w.AuthorPaths); foreach (var key in new[] { "shortcuts", "env_add_path" }) if (Changed(key)) { if (scratch[key] is { } value) n[key] = value.DeepClone(); else n.Remove(key); } }
     }
-    private void ApplySetup(ScoopSetupResult result) { if (w.SetupState == ScoopSetupState.Checking && result.State is ScoopSetupState.Missing or ScoopSetupState.Broken or ScoopSetupState.PathMissing) w.Tab = 5; w.SetupState = result.State; w.SetupMessage = result.Message; if (result.Root.Length > 0) w.Root = result.Root; }
+    private void ApplySetup(ScoopSetupResult result) { if (w.SetupState == ScoopSetupState.Checking && result.State is ScoopSetupState.Missing or ScoopSetupState.Broken or ScoopSetupState.PathMissing) w.Tab = 0; w.SetupState = result.State; w.SetupMessage = result.Message; if (result.Root.Length > 0) w.Root = result.Root; }
     private void Filter() { var selected = w.Selected?.Name; Replace(w.Installed, all.Where(a => $"{a.Name} {a.Version} {a.Bucket} {a.HeldLabel} {a.Status}".Contains(w.Filter.Trim(), StringComparison.OrdinalIgnoreCase))); w.Selected = w.Installed.FirstOrDefault(a => a.Name == selected); }
     private ScoopPackage One() => (active?.Selected ?? w.Selected) ?? throw new InvalidOperationException("Select an installed app.");
     private void Select()

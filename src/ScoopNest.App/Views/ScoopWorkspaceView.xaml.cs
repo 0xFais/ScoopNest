@@ -113,7 +113,7 @@ public partial class ScoopWorkspaceView : UserControl
     private void ContextFolder(object sender, RoutedEventArgs e) => Execute("OpenFolder");
     private void CopyName(object sender, RoutedEventArgs e) { if (Workspace?.Selected is { } a) Clipboard.SetText(a.Name); }
     private void SearchKey(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) { Execute("Search"); e.Handled = true; } }
-    private void KeyPressed(object sender, KeyEventArgs e) { if (e.Key == Key.F5) { Execute("Refresh"); e.Handled = true; } if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control) { Workspace!.Tab = 0; FilterBox.Focus(); e.Handled = true; } if (e.Key == Key.Escape && Keyboard.FocusedElement == FilterBox) Workspace!.Filter = ""; }
+    private void KeyPressed(object sender, KeyEventArgs e) { if (e.Key == Key.F5) { Execute("Refresh"); e.Handled = true; } if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control) { Workspace!.Tab = 1; FilterBox.Focus(); e.Handled = true; } if (e.Key == Key.Escape && Keyboard.FocusedElement == FilterBox) Workspace!.Filter = ""; }
 }
 
 

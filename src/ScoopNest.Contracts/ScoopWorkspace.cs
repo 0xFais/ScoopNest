@@ -21,12 +21,12 @@ public sealed class ScoopWorkspace : ObservableObject
     public string SetupMessage { get => setupMessage; set => Set(ref setupMessage, value); }
     public string InstallLocation { get => installLocation; set => Set(ref installLocation, value); }
     public bool HasInstallation => SetupState is ScoopSetupState.Ready or ScoopSetupState.PathMissing;
-    public bool ShowInstall => SetupState == ScoopSetupState.Missing;
+    public bool ShowInstall => SetupState is ScoopSetupState.Missing or ScoopSetupState.Broken;
     public bool NeedsPath => SetupState == ScoopSetupState.PathMissing;
     public string SetupTitle => SetupState switch { ScoopSetupState.Ready => "✓ Scoop is ready", ScoopSetupState.PathMissing => "Scoop found — PATH setup needed", ScoopSetupState.Missing => "Scoop is not installed", ScoopSetupState.Broken => "Scoop installation needs attention", ScoopSetupState.Installing => "Installing Scoop…", _ => "Checking Scoop…" };
     private string root = "", filter = "", query = "", summary = "Choose Refresh to detect Scoop.", details = "Select a package to inspect its details.", pathEntries = "", version = "";
     private ScoopPackage? selected;
-    private int tab;
+    private int tab = 1;
     private bool running;
     private string operationStatus = "Ready";
     public bool IsRunning { get => running; set => Set(ref running, value); }
