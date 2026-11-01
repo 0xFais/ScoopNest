@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../ScoopNest.Contracts/ScoopNest.Contracts.csproj" />
+    <ProjectReference Include="../ScoopNest.Infrastructure/ScoopNest.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ScoopNest</AssemblyName>
+    <RootNamespace>ScoopManager</RootNamespace>
+    <Product>ScoopNest</Product>
+    <Title>ScoopNest</Title>
+    <ApplicationIcon>Assets\App.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\App.ico" />
+    <ProjectReference Include="../ScoopNest.Scoop/ScoopNest.Scoop.csproj" />
+  </ItemGroup>
+</Project>
+

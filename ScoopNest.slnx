@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ScoopNest.Scoop/ScoopNest.Scoop.csproj" />
+    <Project Path="src/ScoopNest.App/ScoopNest.App.csproj" />
+    <Project Path="src/ScoopNest.Contracts/ScoopNest.Contracts.csproj" />
+    <Project Path="src/ScoopNest.Infrastructure/ScoopNest.Infrastructure.csproj" />
+  </Folder>
+</Solution>
